@@ -23,6 +23,8 @@ class gameClass(QMainWindow):
         self.p2Name = self.findChild(QLineEdit,'line02')
         self.t1 = self.findChild(QRadioButton,'turn1')
         self.t2 = self.findChild(QRadioButton,'turn2')
+        self.tScore = 0
+        self.cScore = 0
         for x in self.area:
             x.mousePressEvent = functools.partial(self.showPic,x)
             x.setText(str(i))
@@ -35,7 +37,33 @@ class gameClass(QMainWindow):
         else:
             self.t1.setChecked(False)
             self.t2.setChecked(True)
+        self.scoreReset = self.findChild(QPushButton,'rstScr')
+        self.scoreReset.clicked.connect(self.clearScores)
 
+    def reset(self):
+        self.turn = randint(0,1)
+        i = 0
+        for x in self.area:
+            x.clear()
+            self.empty[i] = True
+            self.mark[i] = 'n'
+            i = i + 1
+        if self.turn==0:
+            self.t1.setChecked(True)
+            self.t2.setChecked(False)
+        else:
+            self.t1.setChecked(False)
+            self.t2.setChecked(True)
+
+    def clearScores(self):
+        resp = QMessageBox.information(self,'???','Do you really want to clear scores???',QMessageBox.Yes|QMessageBox.No)
+        if resp==QMessageBox.Yes:
+            self.cScore = 0
+            self.tScore = 0
+            self.t1.setText(str(self.cScore))
+            self.t2.setText(str(self.tScore))
+        else:
+            pass
 
     def showPic(self, source=None, event=None):
         #QMessageBox.information(self,'info',source.objectName())
@@ -70,11 +98,25 @@ class gameClass(QMainWindow):
             #print(y)
             #print(mc,mt)
             if mt==3:
-                QMessageBox.information(self,'info',self.p1Name.text()+' Won',QMessageBox.Yes)
+                QMessageBox.information(self,'info',self.p1Name.text()+' Won',QMessageBox.Ok)
+                #print(str(self.tScore),str(self.cScore))
+                self.reset()
+                self.tScore = 1 + self.tScore
+                self.t1.setText(str(self.tScore))
                 break
             elif mc==3:
-                QMessageBox.information(self,'info',self.p2Name.text()+' Won',QMessageBox.Yes)
+                QMessageBox.information(self,'info',self.p2Name.text()+' Won',QMessageBox.Ok)
+                self.reset()
+                self.cScore = 1 + self.cScore
+                self.t2.setText(str(self.cScore))
+                #print(str(self.tScore),str(self.cScore))
                 break
+        i = False
+        for x in self.empty:
+            i = x or i
+        if not i:
+            QMessageBox.information(self,'info','That''s a tie!!!!', QMessageBox.Ok)
+            self.reset()
 
 
 app = QApplication(sys.argv)
